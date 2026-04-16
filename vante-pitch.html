@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vante — A Proposta</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #080D0B;
+  --bg2:    #0E1712;
+  --bg3:    #14211A;
+  --green:  #2D5A3D;
+  --green2: #3D7A52;
+  --accent: #C8A84B;
+  --accent2:#E8C96A;
+  --text:   #EDE9E1;
+  --text2:  #8A9E90;
+  --text3:  #3D5245;
+  --border: rgba(200,168,75,0.18);
+  --border2:rgba(200,168,75,0.07);
+  --glow:   rgba(200,168,75,0.12);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* CUSTOM CURSOR */
+.cursor {
+  position: fixed;
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(200,168,75,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
+}
+.cursor.hover { width: 6px; height: 6px; }
+.cursor-ring.hover { width: 56px; height: 56px; }
+
+/* GRAIN OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9000;
+  opacity: 0.35;
+}
+
+/* SCROLL PROGRESS */
+.scroll-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  z-index: 1000;
+  width: 0%;
+  transition: width 0.1s;
+  box-shadow: 0 0 12px var(--accent);
+}
+
+/* NAV */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 900;
+  padding: 24px 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.4s, backdrop-filter 0.4s;
+}
+.nav.scrolled {
+  background: rgba(8,13,11,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border2);
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.nav-diamond {
+  width: 24px; height: 24px;
+  border: 1.5px solid var(--accent);
+  transform: rotate(45deg);
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-diamond::after {
+  content: '';
+  width: 7px; height: 7px;
+  background: var(--accent);
+}
+.nav-wordmark {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.nav-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+}
+.nav-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+  cursor: pointer;
+  transition: background 0.3s, transform 0.3s;
+}
+.nav-dot.active { background: var(--accent); transform: scale(1.4); }
+
+/* SECTIONS COMMON */
+section {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* REVEAL ANIMATIONS */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-left.visible { opacity: 1; transform: translateX(0); }
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-right.visible { opacity: 1; transform: translateX(0); }
+.delay-1 { transition-delay: 0.1s !important; }
+.delay-2 { transition-delay: 0.2s !important; }
+.delay-3 { transition-delay: 0.35s !important; }
+.delay-4 { transition-delay: 0.5s !important; }
+.delay-5 { transition-delay: 0.65s !important; }
+.delay-6 { transition-delay: 0.8s !important; }
+
+/* ============================================================
+   HERO — SECTION 0
+   ============================================================ */
+#hero {
+  padding: 0 64px;
+  overflow: hidden;
+}
+.hero-bg-lines {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-bg-lines::before {
+  content: '';
+  position: absolute;
+  top: -300px; right: -300px;
+  width: 900px; height: 900px;
+  background: radial-gradient(circle, rgba(45,90,61,0.25) 0%, transparent 65%);
+  animation: pulse 8s ease-in-out infinite;
+}
+.hero-bg-lines::after {
+  content: '';
+  position: absolute;
+  bottom: -200px; left: -100px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(200,168,75,0.06) 0%, transparent 65%);
+  animation: pulse 12s ease-in-out infinite reverse;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: block;
+  width: 48px; height: 1px;
+  background: var(--accent);
+}
+
+.hero-title {
+  font-size: clamp(64px, 9vw, 120px);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  margin-bottom: 0;
+  position: relative;
+  z-index: 1;
+}
+.hero-title em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+  font-size: 1.05em;
+}
+.hero-title .line { overflow: hidden; display: block; }
+.hero-title .line span {
+  display: block;
+  transform: translateY(110%);
+  transition: transform 1s cubic-bezier(0.16,1,0.3,1);
+}
+.hero-title .line span.in { transform: translateY(0); }
+
+.hero-sub {
+  margin-top: 48px;
+  font-size: 16px;
+  color: var(--text2);
+  max-width: 500px;
+  line-height: 1.8;
+  font-weight: 400;
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 40px; left: 64px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.2em;
+}
+.scroll-line {
+  width: 40px; height: 1px;
+  background: var(--text3);
+  position: relative;
+  overflow: hidden;
+}
+.scroll-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: translateX(-100%);
+  animation: scrollLine 2s ease-in-out infinite;
+}
+@keyframes scrollLine {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+/* HERO COUNT ROW */
+.hero-counts {
+  position: absolute;
+  right: 64px;
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  text-align: right;
+}
+.hc-num {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.hc-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   SECTION LABELS
+   ============================================================ */
+.sec-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 56px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.sec-label::before {
+  content: '';
+  display: block;
+  width: 32px; height: 1px;
+  background: var(--text3);
+}
+.sec-heading {
+  font-size: clamp(40px, 5vw, 68px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin-bottom: 24px;
+}
+.sec-heading em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+/* ============================================================
+   SECTION 1 — CREDENCIAIS (Rafael)
+   ============================================================ */
+#credenciais {
+  padding: 120px 64px;
+  background: var(--bg);
+}
+#credenciais::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+.cred-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.cred-card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  padding: 40px 36px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.4s, transform 0.4s;
+}
+.cred-card:hover {
+  border-color: var(--border);
+  transform: translateY(-4px);
+}
+.cred-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px;
+  height: 0%;
+  background: var(--accent);
+  transition: height 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.cred-card.visible::before { height: 100%; }
+
+.cred-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.cred-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  letter-spacing: -0.01em;
+}
+.cred-desc {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.cred-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ctag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* SKILLS BARS */
+.skill-bars { margin-top: 48px; }
+.skill-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.sb-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 0.05em;
+  min-width: 160px;
+}
+.sb-track {
+  flex: 1;
+  height: 2px;
+  background: var(--bg3);
+  position: relative;
+  overflow: hidden;
+}
+.sb-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--green2), var(--accent));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.2s cubic-bezier(0.16,1,0.3,1);
+}
+.sb-fill.animated { transform: scaleX(1); }
+.sb-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ============================================================
+   SECTION 2 — O NEGÓCIO
+   ============================================================ */
+#negocio {
+  padding: 120px 64px;
+  background: var(--bg2);
+  position: relative;
+}
+#negocio::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 60% 50% at 80% 50%, rgba(45,90,61,0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.neg-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.neg-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.flow-step {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--border2);
+  position: relative;
+}
+.flow-step:last-child { border-bottom: none; }
+.flow-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  min-width: 32px;
+  padding-top: 3px;
+}
+.flow-body {}
+.flow-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.flow-desc {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+/* ROÇA MAP VISUAL */
+.roca-visual {
+  position: relative;
+}
+.roca-card {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  padding: 40px 36px;
+  position: relative;
+  overflow: hidden;
+}
+.roca-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle at top right, rgba(45,90,61,0.4), transparent);
+}
+.roca-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.roca-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.roca-sub {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 32px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.roca-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.roca-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border2);
+}
+.ri-left {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+.ri-right {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+
+.route-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+.route-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.route-track {
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--accent) 0, var(--accent) 6px, transparent 6px, transparent 12px);
+  position: relative;
+}
+.route-arrow {
+  font-size: 12px;
+  color: var(--accent);
+}
+.route-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.15em;
+}
+
+/* ============================================================
+   SECTION 3 — O ARGUMENTO (por que Rafael é vital)
+   ============================================================ */
+#argumento {
+  padding: 120px 64px;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.arg-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.arg-backdrop::before {
+  content: '';
+  position: absolute;
+  left: -200px; top: 50%;
+  transform: translateY(-50%);
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(45,90,61,0.18) 0%, transparent 65%);
+}
+
+.arg-layout {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.arg-intro {
+  position: sticky;
+  top: 120px;
+}
+
+.arg-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.arg-block {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.4s, transform 0.4s;
+}
+.arg-block:hover {
+  border-color: rgba(200,168,75,0.35);
+  transform: translateX(6px);
+}
+.arg-block::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 3px;
+  height: 0;
+  background: var(--accent);
+  transform: translateY(-50%);
+  transition: height 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+.arg-block.visible::before { height: 60%; }
+
+.arg-block-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.2em;
+  margin-bottom: 16px;
+}
+.arg-block-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+.arg-block-title em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  color: var(--accent);
+}
+.arg-block-desc {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.75;
+}
+.arg-block-highlight {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(200,168,75,0.06);
+  border-left: 2px solid var(--accent);
+}
+.arg-block-highlight p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   SECTION 4 — NÚMEROS / PROJEÇÃO
+   ============================================================ */
+#numeros {
+  padding: 0 64px;
+  min-height: auto;
+  background: var(--bg2);
+  border-top: 1px solid var(--border2);
+  border-bottom: 1px solid var(--border2);
+}
+.num-inner {
+  padding: 80px 0;
+}
+.num-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+.num-item {
+  padding: 48px 32px;
+  border-right: 1px solid var(--border2);
+  position: relative;
+  text-align: center;
+}
+.num-item:last-child { border-right: none; }
+.num-item::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 1px; height: 0;
+  background: var(--accent);
+  transition: height 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+.num-item.visible::before { height: 40px; }
+
+.n-big {
+  font-size: 54px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.n-big .counter { display: inline-block; }
+.n-suffix {
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--accent2);
+}
+.n-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.n-sub {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   SECTION 5 — ROADMAP
+   ============================================================ */
+#roadmap {
+  padding: 120px 64px;
+  background: var(--bg);
+}
+
+.roadmap-line {
+  display: flex;
+  gap: 0;
+  position: relative;
+  margin-top: 64px;
+}
+.roadmap-line::before {
+  content: '';
+  position: absolute;
+  top: 28px; left: 20px; right: 20px;
+  height: 1px;
+  background: var(--border2);
+}
+
+.rm-step {
+  flex: 1;
+  padding: 0 20px;
+  position: relative;
+}
+.rm-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--text3);
+  margin: 0 auto 24px;
+  position: relative;
+  z-index: 1;
+  transition: border-color 0.4s, background 0.4s, box-shadow 0.4s;
+}
+.rm-step.active .rm-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 20px rgba(200,168,75,0.5);
+}
+.rm-phase {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 12px;
+}
+.rm-step.active .rm-phase { color: var(--accent); }
+.rm-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text2);
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.rm-step.active .rm-title { color: var(--text); }
+.rm-items {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.9;
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+/* ============================================================
+   SECTION 6 — CTA FINAL
+   ============================================================ */
+#cta {
+  padding: 120px 64px;
+  background: var(--bg2);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+#cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(45,90,61,0.2) 0%, transparent 65%);
+  pointer-events: none;
+}
+#cta::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+.cta-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.cta-label::before,.cta-label::after {
+  content: '';
+  display: block;
+  width: 40px; height: 1px;
+  background: var(--accent);
+}
+.cta-title {
+  font-size: clamp(48px, 7vw, 96px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin-bottom: 32px;
+}
+.cta-title em {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+.cta-sub {
+  font-size: 16px;
+  color: var(--text2);
+  line-height: 1.8;
+  max-width: 520px;
+  margin: 0 auto 56px;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 44px;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent2);
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.cta-btn:hover::before { transform: translateX(0); }
+.cta-btn:hover { transform: translateY(-3px); box-shadow: 0 20px 60px rgba(200,168,75,0.3); }
+.cta-btn span { position: relative; z-index: 1; }
+.cta-btn svg { position: relative; z-index: 1; }
+
+/* FOOTER */
+.footer {
+  padding: 32px 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border2);
+}
+.footer-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--text3);
+}
+.footer-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text3); letter-spacing: 0.1em;
+}
+
+/* HIGHLIGHT PILL */
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  background: rgba(200,168,75,0.12);
+  border: 1px solid rgba(200,168,75,0.3);
+  color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+/* FLOATING SECTION NUMBER */
+.float-num {
+  position: absolute;
+  right: 64px;
+  top: 80px;
+  font-size: 180px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.015);
+  letter-spacing: -0.05em;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* INTRO BANNER */
+.intro-banner {
+  background: var(--accent);
+  padding: 12px 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ib-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bg);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   ANIMATED ENTER for hero
+   ============================================================ */
+.page-loader {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 32px;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+.page-loader.hidden { opacity: 0; visibility: hidden; }
+.loader-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: loaderIn 0.8s 0.3s forwards;
+}
+@keyframes loaderIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+.loader-diamond {
+  width: 32px; height: 32px;
+  border: 2px solid var(--accent);
+  transform: rotate(45deg);
+  display: flex; align-items: center; justify-content: center;
+  animation: spinIn 0.8s 0.3s both;
+}
+@keyframes spinIn {
+  from { transform: rotate(-45deg) scale(0); opacity: 0; }
+  to { transform: rotate(45deg) scale(1); opacity: 1; }
+}
+.loader-diamond::after {
+  content: '';
+  width: 10px; height: 10px;
+  background: var(--accent);
+}
+.loader-wordmark {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.loader-bar {
+  width: 200px; height: 1px;
+  background: var(--bg3);
+  position: relative;
+  overflow: hidden;
+}
+.loader-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--green2), var(--accent));
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: fill 1.2s 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes fill { to { transform: scaleX(1); } }
+.loader-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.2em;
+  opacity: 0;
+  animation: loaderIn 0.8s 0.5s forwards;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .nav { padding: 20px 32px; }
+  #hero, #credenciais, #negocio, #argumento, #numeros, #roadmap, #cta { padding-left: 32px; padding-right: 32px; }
+  .cred-grid, .neg-layout, .arg-layout { grid-template-columns: 1fr; gap: 48px; }
+  .num-grid { grid-template-columns: repeat(2,1fr); }
+  .roadmap-line { flex-direction: column; }
+  .roadmap-line::before { display: none; }
+  .hero-counts { display: none; }
+  .float-num { display: none; }
+  .arg-intro { position: static; }
+  .footer { flex-direction: column; gap: 12px; text-align: center; }
+  .intro-banner { padding: 12px 32px; flex-direction: column; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="page-loader" id="loader">
+  <div class="loader-logo">
+    <div class="loader-diamond"></div>
+    <span class="loader-wordmark">Vante</span>
+  </div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+  <div class="loader-label">carregando proposta...</div>
+</div>
+
+<!-- SCROLL PROGRESS -->
+<div class="scroll-bar" id="scrollBar"></div>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+  <div class="nav-logo">
+    <div class="nav-diamond"></div>
+    <span class="nav-wordmark">Vante</span>
+  </div>
+  <span class="nav-label">// proposta de parceria</span>
+  <div class="nav-dots">
+    <div class="nav-dot active" onclick="scrollToSection(0)"></div>
+    <div class="nav-dot" onclick="scrollToSection(1)"></div>
+    <div class="nav-dot" onclick="scrollToSection(2)"></div>
+    <div class="nav-dot" onclick="scrollToSection(3)"></div>
+    <div class="nav-dot" onclick="scrollToSection(4)"></div>
+    <div class="nav-dot" onclick="scrollToSection(5)"></div>
+  </div>
+</nav>
+
+<!-- INTRO BANNER -->
+<div class="intro-banner">
+  <span class="ib-text">Proposta de Parceria Estratégica &nbsp;—&nbsp; Vante Inteligência & Distribuição</span>
+  <span class="ib-text" style="opacity:0.6">Confidencial · 2025</span>
+</div>
+
+<!-- ======== SECTION 0: HERO ======== -->
+<section id="hero" data-section="0">
+  <div class="hero-bg-lines"></div>
+  <div class="float-num">00</div>
+
+  <div style="max-width: 900px; padding-top: 160px; padding-bottom: 140px;">
+    <div class="hero-eyebrow reveal">Ubatã, BA → Escala Nacional</div>
+
+    <h1 class="hero-title">
+      <span class="line"><span id="hl1">Da raiz</span></span>
+      <span class="line"><span id="hl2">ao <em>mercado.</em></span></span>
+    </h1>
+
+    <p class="hero-sub reveal delay-4">
+      Um negócio construído sobre origem rastreável, produto premium e tecnologia real. Esta não é uma apresentação qualquer — é o argumento mais sólido que você vai ouvir.
+    </p>
+  </div>
+
+  <div class="hero-counts reveal delay-5">
+    <div>
+      <div class="hc-num">3×</div>
+      <div class="hc-label">Margem vs. Venda<br>de Cacau Bruto</div>
+    </div>
+    <div style="margin-top: 32px;">
+      <div class="hc-num">D2C</div>
+      <div class="hc-label">Zero Intermediários</div>
+    </div>
+    <div style="margin-top: 32px;">
+      <div class="hc-num">BA</div>
+      <div class="hc-label">Origem Certificada</div>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>rolar para ver a proposta</span>
+  </div>
+</section>
+
+<!-- ======== SECTION 1: CREDENCIAIS ======== -->
+<section id="credenciais" data-section="1">
+  <div class="float-num">01</div>
+
+  <div class="sec-label reveal">01 — o parceiro tecnológico</div>
+  <div class="sec-heading reveal delay-1">Rafael <em>Custódio.</em><br>O ativo que falta.</div>
+  <p style="font-size:15px; color:var(--text2); max-width:520px; line-height:1.8; margin-bottom:64px;" class="reveal delay-2">
+    Formando em Administração, desenvolvedor Full Stack e estrategista digital. O diferencial não é a soma das partes — é a <span class="pill">intersecção única</span> entre gestão, código e visão de negócio.
+  </p>
+
+  <div class="cred-grid">
+    <div>
+      <div class="cred-card reveal delay-1">
+        <div class="cred-tag">01 · Web Dev</div>
+        <div class="cred-title">Frontend de Alta Conversão</div>
+        <div class="cred-desc">Landing pages e storefronts que vendem. Design, SEO técnico e Core Web Vitals otimizados para buscadores e marketplaces. A loja digital da Vante com identidade própria.</div>
+        <div class="cred-tags">
+          <span class="ctag">HTML/CSS/JS</span>
+          <span class="ctag">React</span>
+          <span class="ctag">SEO</span>
+          <span class="ctag">Performance</span>
+        </div>
+      </div>
+
+      <div class="cred-card reveal delay-2" style="margin-top:2px;">
+        <div class="cred-tag">02 · Backend & Automação</div>
+        <div class="cred-title">Sistemas que Trabalham Sozinhos</div>
+        <div class="cred-desc">APIs REST, pipelines de dados, automações com Python e n8n. Desde alertas de estoque até integração com Mercado Livre via API — zero trabalho manual repetitivo.</div>
+        <div class="cred-tags">
+          <span class="ctag">Python</span>
+          <span class="ctag">FastAPI</span>
+          <span class="ctag">n8n</span>
+          <span class="ctag">SQL</span>
+        </div>
+      </div>
+
+      <div class="cred-card reveal delay-3" style="margin-top:2px;">
+        <div class="cred-tag">03 · Inteligência de Negócio</div>
+        <div class="cred-title">Dados que Geram Decisão</div>
+        <div class="cred-desc">Dashboards executivos em Power BI, modelagem de preços por elasticidade-demanda, análise de margem e FP&A. O negócio cresce com dados, não com achismo.</div>
+        <div class="cred-tags">
+          <span class="ctag">Power BI</span>
+          <span class="ctag">DAX</span>
+          <span class="ctag">FP&A</span>
+          <span class="ctag">Pricing</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="skill-bars reveal delay-2">
+        <div class="sec-label" style="margin-bottom:28px;">Stack completa</div>
+        <div class="skill-bar-row">
+          <span class="sb-label">Frontend (React/HTML)</span>
+          <div class="sb-track"><div class="sb-fill" data-width="0.90"></div></div>
+          <span class="sb-pct">90%</span>
+        </div>
+        <div class="skill-bar-row">
+          <span class="sb-label">Python (Backend/Scripts)</span>
+          <div class="sb-track"><div class="sb-fill" data-width="0.85"></div></div>
+          <span class="sb-pct">85%</span>
+        </div>
+        <div class="skill-bar-row">
+          <span class="sb-label">Power BI / DAX</span>
+          <div class="sb-track"><div class="sb-fill" data-width="0.86"></div></div>
+          <span class="sb-pct">86%</span>
+        </div>
+        <div class="skill-bar-row">
+          <span class="sb-label">Análise de Negócios</span>
+          <div class="sb-track"><div class="sb-fill" data-width="0.84"></div></div>
+          <span class="sb-pct">84%</span>
+        </div>
+        <div class="skill-bar-row">
+          <span class="sb-label">Integrações de API</span>
+          <div class="sb-track"><div class="sb-fill" data-width="0.82"></div></div>
+          <span class="sb-pct">82%</span>
+        </div>
+        <div class="skill-bar-row">
+          <span class="sb-label">SQL (Postgres/Supabase)</span>
+          <div class="sb-track"><div class="sb-fill" data-width="0.80"></div></div>
+          <span class="sb-pct">80%</span>
+        </div>
+        <div class="skill-bar-row">
+          <span class="sb-label">SEO Técnico</span>
+          <div class="sb-track"><div class="sb-fill" data-width="0.80"></div></div>
+          <span class="sb-pct">80%</span>
+        </div>
+      </div>
+
+      <div class="roca-card reveal delay-4" style="margin-top: 48px; background: var(--bg3);">
+        <div class="roca-eyebrow">Formação / Base Acadêmica</div>
+        <div style="font-size:18px; font-weight:700; color:var(--text); margin-bottom:4px; letter-spacing:-0.01em;">Administração — UNIFACS</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); margin-bottom:20px; letter-spacing:0.1em;">Formando 2026 · Finance · Strategy · Data Ops</div>
+        <div style="font-size:13px; color:var(--text2); line-height:1.8;">
+          O diferencial está na intersecção: entender o negócio para construir a solução certa. Não é só código. Não é só gestão. É os dois ao mesmo tempo — orientado a resultado.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== SECTION 2: O NEGÓCIO ======== -->
+<section id="negocio" data-section="2">
+  <div class="float-num">02</div>
+
+  <div class="sec-label reveal">02 — o modelo de negócio</div>
+  <div class="sec-heading reveal delay-1">A ideia que<br>você <em>já teve.</em></div>
+  <p style="font-size:15px; color:var(--text2); max-width:560px; line-height:1.8; margin-bottom:64px;" class="reveal delay-2">
+    A lógica já é sua. Você enxergou o valor onde poucos enxergam. O que apresentamos aqui é a estrutura completa desse negócio — da roça ao consumidor final, sem intermediário.
+  </p>
+
+  <div class="neg-layout">
+    <div class="neg-flow reveal-left delay-1">
+      <div class="flow-step">
+        <span class="flow-num">01</span>
+        <div class="flow-body">
+          <div class="flow-title">Acesso Privilegiado à Matéria-Prima</div>
+          <div class="flow-desc">Dois familiares com roça própria em Ubatã, BA — coração da região cacaueira. Compra direta do produtor, com rastreabilidade de origem desde a colheita. Isso é vantagem competitiva que não se compra com dinheiro.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">02</span>
+        <div class="flow-body">
+          <div class="flow-title">Processamento: Torra & Descasque</div>
+          <div class="flow-desc">Cacau comprado → torra artesanal controlada → descascamento → nibs e amêndoas de altíssimo valor agregado. A transformação acontece localmente, mantendo o custo baixo e a qualidade alta.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">03</span>
+        <div class="flow-body">
+          <div class="flow-title">Produto Premium com Margem Real</div>
+          <div class="flow-desc">Nibs de cacau e amêndoas são consumidos por um público que paga caro por qualidade e origem verificada. Em Feira de Santana e nos marketplaces, o preço por grama é significativamente superior ao cacau bruto.</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">04</span>
+        <div class="flow-body">
+          <div class="flow-title">Distribuição D2C via Marketplaces</div>
+          <div class="flow-desc">Mercado Livre como canal principal. Zero loja física no início — custo baixo, alcance nacional. Escala com dados: vendas monitoradas, preço otimizado dinamicamente, reputação construída.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal-right delay-2">
+      <div class="roca-card">
+        <div class="roca-eyebrow">// origem.verificada — Ubatã, BA</div>
+        <div class="roca-title">Roça → Produto</div>
+        <div class="roca-sub">cadeia_produtiva: controlada</div>
+
+        <div class="roca-items">
+          <div class="roca-item">
+            <span class="ri-left">🌱 Cacau Nativo</span>
+            <span class="ri-right">Ubatã, BA</span>
+          </div>
+          <div class="roca-item">
+            <span class="ri-left">🔥 Torra Artesanal</span>
+            <span class="ri-right">Temperatura Controlada</span>
+          </div>
+          <div class="roca-item">
+            <span class="ri-left">◆ Nibs de Cacau</span>
+            <span class="ri-right">Produto Final</span>
+          </div>
+          <div class="roca-item">
+            <span class="ri-left">◈ Amêndoa Premium</span>
+            <span class="ri-right">Alto Valor Agregado</span>
+          </div>
+          <div class="roca-item">
+            <span class="ri-left">📦 Marketplace (ML)</span>
+            <span class="ri-right">D2C — Escala</span>
+          </div>
+        </div>
+
+        <div class="route-line">
+          <div class="route-dot"></div>
+          <span class="route-label">Ubatã</span>
+          <div class="route-track"></div>
+          <span class="route-arrow">▶</span>
+          <span class="route-label">Feira de Santana</span>
+          <div class="route-track"></div>
+          <span class="route-arrow">▶</span>
+          <div class="route-dot"></div>
+          <span class="route-label">Brasil</span>
+        </div>
+
+        <div style="margin-top:28px; padding:16px; background:rgba(200,168,75,0.06); border-left:2px solid var(--accent);">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:0.2em; margin-bottom:8px;">VANTAGEM ESTRUTURAL</div>
+          <div style="font-size:13px; color:var(--text2); line-height:1.7;">
+            Acesso a produtores na família = preço de compra abaixo do mercado + rastreabilidade real + possibilidade de exclusividade futura. Isso é um <strong style="color:var(--text);">fosso competitivo</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== SECTION 3: O ARGUMENTO ======== -->
+<section id="argumento" data-section="3">
+  <div class="arg-backdrop"></div>
+  <div class="float-num">03</div>
+
+  <div class="arg-layout">
+    <div class="arg-intro">
+      <div class="sec-label reveal">03 — o argumento central</div>
+      <div class="sec-heading reveal delay-1">Por que <em>seria</em><br>quase burrice<br>não ter esse<br>sócio.</div>
+      <p style="font-size:14px; color:var(--text2); line-height:1.8; margin-top:24px;" class="reveal delay-2">
+        Capital sem tecnologia é um produto no meio da multidão. Tecnologia sem capital é uma ideia sem corpo. Juntos, é uma empresa que ninguém consegue copiar barato.
+      </p>
+      <div style="margin-top:32px; padding:20px; border:1px solid var(--border2); background: var(--bg2);" class="reveal delay-3">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text3); letter-spacing:0.2em; margin-bottom:10px;">EQUAÇÃO DA PARCERIA</div>
+        <div style="font-size:15px; color:var(--text); font-weight:600; letter-spacing:-0.01em; line-height:1.6;">
+          Capital + Acesso<br>+ Experiência Industrial<br><span style="color:var(--accent);">+ Tecnologia Proprietária</span><br><span style="color:var(--text2); font-weight:400; font-size:13px;">= Vantagem Difícil de Replicar</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arg-blocks">
+
+      <div class="arg-block reveal delay-1">
+        <div class="arg-block-num">ARG · 01</div>
+        <div class="arg-block-title">Sem tech, você é <em>mais um</em> no marketplace.</div>
+        <div class="arg-block-desc">
+          Qualquer pessoa pode vender nibs de cacau no Mercado Livre. Hoje já há dezenas fazendo isso. A diferença entre ser enterrado no algoritmo ou dominar a busca está em SEO de produto, gestão de reputação, precificação dinâmica e qualidade de anúncio — tudo isso é código e estratégia. Sem um parceiro técnico, você paga uma agência por sempre, sem controle real do ativo.
+        </div>
+        <div class="arg-block-highlight">
+          <p>→ Construir um ranqueamento forte no ML leva meses de otimização técnica sistemática. Com automação, isso se torna processo — não trabalho avulso.</p>
+        </div>
+      </div>
+
+      <div class="arg-block reveal delay-2">
+        <div class="arg-block-num">ARG · 02</div>
+        <div class="arg-block-title">Automação = <em>você ganha</em> enquanto trabalha na Petrobrás.</div>
+        <div class="arg-block-desc">
+          Você trabalha semana sim, semana não. Sem automação, o negócio depende de presença constante: responder clientes, atualizar estoque, processar pedidos, ajustar preços. Com sistemas bem construídos — alertas automáticos, integração ML via API, CRM de clientes — o negócio opera com mínima supervisão humana. Esse é o valor de ter um dev como sócio.
+        </div>
+        <div class="arg-block-highlight">
+          <p>→ Um pipeline Python + n8n pode automatizar 80% das operações rotineiras do marketplace. Isso não é luxo — é a condição para que o negócio escale sem contratar funcionários.</p>
+        </div>
+      </div>
+
+      <div class="arg-block reveal delay-3">
+        <div class="arg-block-num">ARG · 03</div>
+        <div class="arg-block-title">Dados reais <em>valem mais</em> que intuição.</div>
+        <div class="arg-block-desc">
+          Você tem a mentalidade de engenheiro: o que não se mede, não se controla. Aqui, cada decisão — qual produto lançar, quanto cobrar, quando repor estoque, qual região tem mais demanda — pode ser tomada com dados. Dashboards em Power BI, simuladores de elasticidade de preço, análise de margem por SKU. Isso é o que separa um negócio amador de um operado com precisão.
+        </div>
+        <div class="arg-block-highlight">
+          <p>→ Já existe um simulador de EPD (elasticidade-preço da demanda) desenvolvido. Essa ferramenta, aplicada à precificação da Vante, pode maximizar margem por cenário de mercado.</p>
+        </div>
+      </div>
+
+      <div class="arg-block reveal delay-4">
+        <div class="arg-block-num">ARG · 04</div>
+        <div class="arg-block-title">Marca com <em>identidade</em> é barreira de entrada.</div>
+        <div class="arg-block-desc">
+          Produto commodity vira premium quando tem marca. A Vante já tem uma identidade visual construída — dark, premium, tech. Um site próprio, uma história de rastreabilidade, um design de embalagem consistente. Isso não é vaidade — é a diferença entre competir por preço ou construir um brand que comanda margem. E brand é construído com web, design e narrativa.
+        </div>
+        <div class="arg-block-highlight">
+          <p>→ A identidade visual Vante está desenvolvida. O próximo passo é o storefront próprio com SEO de nicho — tráfego orgânico que nenhum concorrente sem dev consegue replicar sem pagar caro por sempre.</p>
+        </div>
+      </div>
+
+      <div class="arg-block reveal delay-5">
+        <div class="arg-block-num">ARG · 05</div>
+        <div class="arg-block-title">O timing de <em>hoje</em> não volta.</div>
+        <div class="arg-block-desc">
+          O mercado de produtos naturais premium no Brasil está em expansão acelerada. Nibs de cacau especial ainda têm baixa oferta com qualidade certificada de origem. A janela de construção de reputação e ranqueamento orgânico nos marketplaces existe agora — e quem entrar primeiro com qualidade e tecnologia crava posição difícil de desbancar. Esperar tem custo real.
+        </div>
+        <div class="arg-block-highlight">
+          <p>→ Cada mês sem avançar é um mês que algum outro vendedor está acumulando reviews, histórico de vendas e ranqueamento no ML. Primeiro no espaço + melhor operação = liderança sustentável.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ======== SECTION 4: NÚMEROS ======== -->
+<section id="numeros" data-section="4" style="min-height: auto;">
+  <div class="num-inner">
+    <div class="sec-label reveal" style="justify-content:center; margin-bottom:48px;">04 — potencial do negócio</div>
+    <div class="num-grid">
+      <div class="num-item reveal delay-1">
+        <div class="n-big"><span class="counter" data-target="3">0</span><span class="n-suffix">×</span></div>
+        <div class="n-label">Margem sobre Cacau Bruto</div>
+        <div class="n-sub">Nibs processado vs commodity</div>
+      </div>
+      <div class="num-item reveal delay-2">
+        <div class="n-big">R$<span class="counter" data-target="48">0</span></div>
+        <div class="n-label">Ticket Médio / 250g</div>
+        <div class="n-sub">Produto premium rastreável</div>
+      </div>
+      <div class="num-item reveal delay-3">
+        <div class="n-big"><span class="counter" data-target="80">0</span><span class="n-suffix">%</span></div>
+        <div class="n-label">Operação Automatizável</div>
+        <div class="n-sub">Com pipeline Python + n8n</div>
+      </div>
+      <div class="num-item reveal delay-4">
+        <div class="n-big"><span class="counter" data-target="0">0</span></div>
+        <div class="n-label">Intermediários</div>
+        <div class="n-sub">Da roça ao consumidor final</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== SECTION 5: ROADMAP ======== -->
+<section id="roadmap" data-section="4">
+  <div class="float-num">05</div>
+  <div class="sec-label reveal">05 — roadmap de execução</div>
+  <div class="sec-heading reveal delay-1">Do acordo ao <em>revenue.</em></div>
+  <p style="font-size:15px; color:var(--text2); max-width:520px; line-height:1.8; margin-bottom:0;" class="reveal delay-2">
+    Quatro fases. Cada uma com entregável claro e prazo real. Sem promessa vaga.
+  </p>
+
+  <div class="roadmap-line">
+    <div class="rm-step active reveal delay-1">
+      <div class="rm-dot"></div>
+      <div class="rm-phase">Fase 01 · M0–M1</div>
+      <div class="rm-title">Estrutura & Marca</div>
+      <div class="rm-items">
+        CNPJ & registros<br>
+        Identidade Visual Vante<br>
+        Site + storefront<br>
+        Setup ML conta vendedor<br>
+        Embalagem & rotulagem
+      </div>
+    </div>
+    <div class="rm-step active reveal delay-2">
+      <div class="rm-dot"></div>
+      <div class="rm-phase">Fase 02 · M2–M3</div>
+      <div class="rm-title">Primeiro Lote & Dados</div>
+      <div class="rm-items">
+        Compra cacau (lote piloto)<br>
+        Torra & processamento<br>
+        Primeiros anúncios ML<br>
+        Dashboard de vendas<br>
+        Coleta de reviews
+      </div>
+    </div>
+    <div class="rm-step reveal delay-3">
+      <div class="rm-dot"></div>
+      <div class="rm-phase">Fase 03 · M4–M6</div>
+      <div class="rm-title">Automação & Escala</div>
+      <div class="rm-items">
+        Pipeline de automação<br>
+        Precificação dinâmica<br>
+        Novos SKUs (amêndoa, etc)<br>
+        SEO de produto otimizado<br>
+        Análise de elasticidade
+      </div>
+    </div>
+    <div class="rm-step reveal delay-4">
+      <div class="rm-dot"></div>
+      <div class="rm-phase">Fase 04 · M7+</div>
+      <div class="rm-title">Expansão Nacional</div>
+      <div class="rm-items">
+        Amazon BR + Shopee<br>
+        Site próprio com SEO<br>
+        Programa de rastreabilidade<br>
+        Exportação (futuro)<br>
+        Certificações orgânicas
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== SECTION 6: CTA ======== -->
+<section id="cta" data-section="5">
+  <div class="cta-label reveal">a decisão</div>
+  <h2 class="cta-title reveal delay-1">
+    Essa conversa<br>vale <em>dinheiro.</em>
+  </h2>
+  <p class="cta-sub reveal delay-2">
+    Você tem o capital, o acesso à origem e a visão. Eu tenho a tecnologia, a estratégia digital e a obsessão por execução limpa. A Vante precisa das duas metades para funcionar de verdade — e você já sabe disso.
+  </p>
+  <div class="reveal delay-3">
+    <a href="https://wa.me/5571983143061?text=Tio%2C%20assisti%20a%20apresenta%C3%A7%C3%A3o.%20Vamos%20conversar%20sobre%20a%20Vante." class="cta-btn">
+      <span>Vamos construir isso juntos</span>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 10h12M12 4l6 6-6 6"/>
+      </svg>
+    </a>
+  </div>
+  <p style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); letter-spacing:0.1em; margin-top:32px;" class="reveal delay-4">
+    Rafael Custódio · custodior.work@gmail.com · +55 71 98314-3061
+  </p>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">
+    <div style="width:16px;height:16px;border:1.5px solid var(--text3);transform:rotate(45deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <div style="width:5px;height:5px;background:var(--text3);"></div>
+    </div>
+    Vante
+  </div>
+  <span class="footer-note">proposta_parceria.html // inteligência e distribuição · 2025</span>
+</footer>
+
+<script>
+// =========================================================
+// LOADER
+// =========================================================
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+    // Animate hero titles
+    setTimeout(() => {
+      document.querySelectorAll('.hero-title .line span').forEach((el, i) => {
+        setTimeout(() => el.classList.add('in'), i * 120);
+      });
+    }, 200);
+  }, 1800);
+});
+
+// =========================================================
+// CUSTOM CURSOR
+// =========================================================
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+
+function animRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  cursorRing.style.left = rx + 'px';
+  cursorRing.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+
+document.querySelectorAll('a, button, .cred-card, .arg-block, .rm-step, .nav-dot').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); cursorRing.classList.add('hover'); });
+  el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); cursorRing.classList.remove('hover'); });
+});
+
+// =========================================================
+// SCROLL PROGRESS
+// =========================================================
+const scrollBar = document.getElementById('scrollBar');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  scrollBar.style.width = pct + '%';
+  
+  // Nav scroll class
+  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 60);
+  
+  // Active nav dot
+  const sections = document.querySelectorAll('section[data-section]');
+  let current = 0;
+  sections.forEach((sec, i) => {
+    if (window.scrollY >= sec.offsetTop - window.innerHeight / 2) current = parseInt(sec.dataset.section);
+  });
+  document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === current);
+  });
+});
+
+// =========================================================
+// INTERSECTION OBSERVER — REVEAL
+// =========================================================
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // Skill bars
+      e.target.querySelectorAll('.sb-fill').forEach(bar => {
+        setTimeout(() => bar.classList.add('animated'), 200);
+      });
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .cred-card, .arg-block, .num-item').forEach(el => {
+  revealObs.observe(el);
+});
+
+// =========================================================
+// COUNTER ANIMATION
+// =========================================================
+function animateCounter(el, target, duration = 1500) {
+  let start = null;
+  const step = (ts) => {
+    if (!start) start = ts;
+    const progress = Math.min((ts - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(eased * target);
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.counter').forEach(c => {
+        const target = parseInt(c.dataset.target);
+        animateCounter(c, target);
+      });
+      counterObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('.num-item').forEach(el => counterObs.observe(el));
+
+// =========================================================
+// SCROLL TO SECTION
+// =========================================================
+const sectionIds = ['hero', 'credenciais', 'negocio', 'argumento', 'roadmap', 'cta'];
+function scrollToSection(i) {
+  const el = document.getElementById(sectionIds[i]);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+// =========================================================
+// SKILL BARS — trigger on separate observer
+// =========================================================
+const barObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.sb-fill').forEach((bar, i) => {
+        setTimeout(() => {
+          bar.style.transform = `scaleX(${bar.dataset.width || 0.8})`;
+        }, i * 80 + 200);
+      });
+      barObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.2 });
+
+document.querySelectorAll('.skill-bars').forEach(el => barObs.observe(el));
+
+// Override sb-fill transition to use scaleX directly
+document.querySelectorAll('.sb-fill').forEach(bar => {
+  bar.style.transition = 'transform 1.2s cubic-bezier(0.16,1,0.3,1)';
+  bar.style.transform = 'scaleX(0)';
+});
+</script>
+</body>
+</html>
